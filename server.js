@@ -112,6 +112,18 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+  socket.on("kick-player", ({ roomCode, targetId }) => {
+  const room = rooms[roomCode];
+  if (room) {
+    const requester = room.players.find(p => p.id === socket.id);
+    if (requester && requester.isHost) {
+      room.players = room.players.filter(p => p.id !== targetId);
+      io.to(targetId).emit("kicked");
+      io.to(roomCode).emit("room-update", { players: room.players });
+    }
+  }
+});
 });
 
 const PORT = process.env.PORT || 3000;
